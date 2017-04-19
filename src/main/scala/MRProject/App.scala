@@ -24,15 +24,17 @@ object App {
 
     //Spark Context
     val sc = new SparkContext(conf)
-    val input = sc.textFile(args(0)).map(line => line.split(",")).map(x => (if(x(26).toInt > 0 || x(26).equals("X")){1}else{0},List(
-      x(955).toDouble,
-      x(956).toDouble,
-      x(957).toDouble,
-      x(959).toDouble,
-      x(962).toDouble,
-      x(963).toDouble,
-      x(966).toDouble,
-      x(967).toDouble)))
+    val input = sc.textFile(args(0)).mapPartitionsWithIndex((idx, iter) => if (idx == 0) iter.drop(1) else iter)
+      .map(line => line.split(",")).map(x =>
+      (if(x(26).equals("X") || Integer.parseInt(x(26)) > 0){1}else{0},List(
+        if(x(955).equals("?")) {0} else{x(955).toDouble},
+        if(x(956).equals("?")) {0} else{x(956).toDouble},
+        if(x(957).equals("?")) {0} else{x(957).toDouble},
+        if(x(959).equals("?")) {0} else{x(959).toDouble},
+        if(x(962).equals("?")) {0} else{x(962).toDouble},
+        if(x(963).equals("?")) {0} else{x(963).toDouble},
+        if(x(966).equals("?")) {0} else{x(966).toDouble},
+        if(x(967).equals("?")) {0} else{x(967).toDouble})))
     val parsed = input.map { case (k, vs) =>
       LabeledPoint(k.toDouble, Vectors.dense(vs.toArray))
     }
