@@ -10,12 +10,86 @@ import org.apache.spark.mllib.tree.{GradientBoostedTrees, RandomForest}
 import org.apache.spark.mllib.tree.configuration.BoostingStrategy
 import org.apache.spark.mllib.tree.model.{GradientBoostedTreesModel, RandomForestModel}
 
-import scala.collection.Map
-
 /**
   * @author ${user.name}
   */
+
 object App {
+  val mappings = scala.collection.mutable.ListBuffer[Int]()
+  val colList = List(
+    "Agelaius_phoeniceus",
+    "POP00_SQMI",
+    "HOUSING_DENSITY",
+    "HOUSING_PERCENT_VACANT",
+    "ELEV_NED",
+    "BCR",
+    "OMERNIK_L3_ECOREGION",
+    "CAUS_TEMP_AVG",
+    "CAUS_PREC",
+    "CAUS_SNOW",
+    "NLCD2001_FS_C11_7500_PLAND",
+    "NLCD2001_FS_C12_7500_PLAND",
+    "NLCD2001_FS_C21_7500_PLAND",
+    "NLCD2001_FS_C22_7500_PLAND",
+    "NLCD2001_FS_C23_7500_PLAND",
+    "NLCD2001_FS_C24_7500_PLAND",
+    "NLCD2001_FS_C31_7500_PLAND",
+    "NLCD2001_FS_C41_7500_PLAND",
+    "NLCD2001_FS_C42_7500_PLAND",
+    "NLCD2001_FS_C43_7500_PLAND",
+    "NLCD2001_FS_C52_7500_PLAND",
+    "NLCD2001_FS_C71_7500_PLAND",
+    "NLCD2001_FS_C81_7500_PLAND",
+    "NLCD2001_FS_C82_7500_PLAND",
+    "NLCD2001_FS_C90_7500_PLAND",
+    "NLCD2001_FS_C95_7500_PLAND",
+    "NLCD2006_FS_C11_7500_PLAND",
+    "NLCD2006_FS_C12_7500_PLAND",
+    "NLCD2006_FS_C21_7500_PLAND",
+    "NLCD2006_FS_C22_7500_PLAND",
+    "NLCD2006_FS_C23_7500_PLAND",
+    "NLCD2006_FS_C24_7500_PLAND",
+    "NLCD2006_FS_C31_7500_PLAND",
+    "NLCD2006_FS_C41_7500_PLAND",
+    "NLCD2006_FS_C42_7500_PLAND",
+    "NLCD2006_FS_C43_7500_PLAND",
+    "NLCD2006_FS_C52_7500_PLAND",
+    "NLCD2006_FS_C71_7500_PLAND",
+    "NLCD2006_FS_C81_7500_PLAND",
+    "NLCD2006_FS_C82_7500_PLAND",
+    "NLCD2006_FS_C90_7500_PLAND",
+    "NLCD2006_FS_C95_7500_PLAND",
+    "NLCD2011_FS_C11_7500_PLAND",
+    "NLCD2011_FS_C12_7500_PLAND",
+    "NLCD2011_FS_C21_7500_PLAND",
+    "NLCD2011_FS_C22_7500_PLAND",
+    "NLCD2011_FS_C23_7500_PLAND",
+    "NLCD2011_FS_C24_7500_PLAND",
+    "NLCD2011_FS_C31_7500_PLAND",
+    "NLCD2011_FS_C41_7500_PLAND",
+    "NLCD2011_FS_C42_7500_PLAND",
+    "NLCD2011_FS_C43_7500_PLAND",
+    "NLCD2011_FS_C52_7500_PLAND",
+    "NLCD2011_FS_C71_7500_PLAND",
+    "NLCD2011_FS_C81_7500_PLAND",
+    "NLCD2011_FS_C82_7500_PLAND",
+    "NLCD2011_FS_C90_7500_PLAND",
+    "NLCD2011_FS_C95_7500_PLAND",
+    "CAUS_TEMP_MIN",
+    "CAUS_TEMP_MAX",
+    "DIST_FROM_FLOWING_FRESH",
+    "DIST_IN_FLOWING_FRESH",
+    "DIST_FROM_STANDING_FRESH",
+    "DIST_IN_STANDING_FRESH",
+    "DIST_FROM_WET_VEG_FRESH",
+    "DIST_IN_WET_VEG_FRESH",
+    "DIST_FROM_FLOWING_BRACKISH",
+    "DIST_IN_FLOWING_BRACKISH",
+    "DIST_FROM_STANDING_BRACKISH",
+    "DIST_IN_STANDING_BRACKISH",
+    "DIST_FROM_WET_VEG_BRACKISH",
+    "DIST_IN_WET_VEG_BRACKISH"
+  )
 
   def main(args : Array[String]) {
     //Handle invalid arguments
@@ -26,72 +100,9 @@ object App {
     //Spark Configuration
     //This needs app name. The Master and other spark-defaults are set in the makefile
     println(System.currentTimeMillis());
-    val conf = new SparkConf().setAppName("DJNS").setMaster("local")
+    val conf = new SparkConf().setAppName("DJNS")
 
-    val mappings = scala.collection.mutable.ArrayBuffer[Int]()
-
-    val colList = Array(
-      "Agelaius_phoeniceus",
-      "POP00_SQMI",
-      "HOUSING_DENSITY",
-      "HOUSING_PERCENT_VACANT",
-      "ELEV_NED",
-      "BCR",
-      "OMERNIK_L3_ECOREGION",
-      "CAUS_TEMP_AVG",
-      "CAUS_PREC",
-      "CAUS_SNOW",
-      "NLCD2001_FS_C11_7500_PLAND",
-      "NLCD2001_FS_C12_7500_PLAND",
-      "NLCD2001_FS_C21_7500_PLAND",
-      "NLCD2001_FS_C22_7500_PLAND",
-      "NLCD2001_FS_C23_7500_PLAND",
-      "NLCD2001_FS_C24_7500_PLAND",
-      "NLCD2001_FS_C31_7500_PLAND",
-      "NLCD2001_FS_C41_7500_PLAND",
-      "NLCD2001_FS_C42_7500_PLAND",
-      "NLCD2001_FS_C43_7500_PLAND",
-      "NLCD2001_FS_C52_7500_PLAND",
-      "NLCD2001_FS_C71_7500_PLAND",
-      "NLCD2001_FS_C81_7500_PLAND",
-      "NLCD2001_FS_C82_7500_PLAND",
-      "NLCD2001_FS_C90_7500_PLAND",
-      "NLCD2001_FS_C95_7500_PLAND",
-      "NLCD2006_FS_C11_7500_PLAND",
-      "NLCD2006_FS_C12_7500_PLAND",
-      "NLCD2006_FS_C21_7500_PLAND",
-      "NLCD2006_FS_C22_7500_PLAND",
-      "NLCD2006_FS_C23_7500_PLAND",
-      "NLCD2006_FS_C24_7500_PLAND",
-      "NLCD2006_FS_C31_7500_PLAND",
-      "NLCD2006_FS_C41_7500_PLAND",
-      "NLCD2006_FS_C42_7500_PLAND",
-      "NLCD2006_FS_C43_7500_PLAND",
-      "NLCD2006_FS_C52_7500_PLAND",
-      "NLCD2006_FS_C71_7500_PLAND",
-      "NLCD2006_FS_C81_7500_PLAND",
-      "NLCD2006_FS_C82_7500_PLAND",
-      "NLCD2006_FS_C90_7500_PLAND",
-      "NLCD2006_FS_C95_7500_PLAND",
-      "NLCD2011_FS_C11_7500_PLAND",
-      "NLCD2011_FS_C12_7500_PLAND",
-      "NLCD2011_FS_C21_7500_PLAND",
-      "NLCD2011_FS_C22_7500_PLAND",
-      "NLCD2011_FS_C23_7500_PLAND",
-      "NLCD2011_FS_C24_7500_PLAND",
-      "NLCD2011_FS_C31_7500_PLAND",
-      "NLCD2011_FS_C41_7500_PLAND",
-      "NLCD2011_FS_C42_7500_PLAND",
-      "NLCD2011_FS_C43_7500_PLAND",
-      "NLCD2011_FS_C52_7500_PLAND",
-      "NLCD2011_FS_C71_7500_PLAND",
-      "NLCD2011_FS_C81_7500_PLAND",
-      "NLCD2011_FS_C82_7500_PLAND",
-      "NLCD2011_FS_C90_7500_PLAND",
-      "NLCD2011_FS_C95_7500_PLAND"
-    )
     //val conf = new SparkConf().setAppName("DJNS").setMaster("local")
-
     //Spark Context
     val sc = new SparkContext(conf)
     var header: String = ""
@@ -105,23 +116,12 @@ object App {
     }
     else iter)
 
-    /*val inputRDD = input.map(line => line.split(",")).map(x => mappings.collect(x)).map(x => (x.slice(0,0),x.slice(1,x.size-1))).map(x=> {
-      (if(x._1(0).equals("X") || Integer.parseInt(x._1(0)) > 0){1.0} else{0.0},
-      for(y <- x._2.iterator if (y.equals("?") || y.toDouble < 0.0); ) yield 0.0)
-    })*/
+    val inputRDD = input.map(line => line.split(",").zipWithIndex).map(x => rCheck(x))
 
-    val inputRDD = input.map(line => line.split(",")).map(x => (for{
-      (y,i) <- x.zipWithIndex
-      if(mappings.contains(i))
-    } yield y).toList)
+    println("InputRDD"+inputRDD.count())
 
-    val someRDD = inputRDD.filter(x => !x.isEmpty).map(x => {
-      (if(x.head.equalsIgnoreCase("X") || Integer.parseInt(x.head) > 0){1.0} else {0.0}
-        ,(for( y <- x.drop(1)) yield rCheck(y)))
-    })
-    println(someRDD.count())
 
-    val parsed = someRDD.map { case (k, vs) =>
+    val parsed = inputRDD.map { case (k, vs) =>
       LabeledPoint(k.toDouble, Vectors.dense(vs.toArray))
     }
 
@@ -129,9 +129,8 @@ object App {
     // Split data into training (60%) and test (40%).
     val splits = parsed.randomSplit(Array(0.8, 0.2))
     val (trainingData, testData) = (splits(0), splits(1))
+
     //val Array(training, test) = filtered.randomSplit(Array(0.6, 0.4))
-
-
     // Split data into training (60%) and test (40%).
     /*val splits = parsed.randomSplit(Array(0.7, 0.3), seed = 11L)
     val training = splits(0).cache()
@@ -202,20 +201,22 @@ object App {
     //GBT Model
 
     val boostingStrategy = BoostingStrategy.defaultParams("Classification")
-    boostingStrategy.numIterations = 1 // Note: Use more iterations in practice.
+    boostingStrategy.numIterations = 10 // Note: Use more iterations in practice.
     boostingStrategy.treeStrategy.numClasses = 2
-    boostingStrategy.treeStrategy.maxDepth = 4
+    boostingStrategy.treeStrategy.maxDepth = 6
     // Empty categoricalFeaturesInfo indicates all features are continuous.
     boostingStrategy.treeStrategy.categoricalFeaturesInfo = scala.Predef.Map[Int, Int]()
-
-    val model = GradientBoostedTrees.train(trainingData, boostingStrategy)
+    //Validation Tolerance Factor
+    boostingStrategy.validationTol = -0.0001
+    val model = new GradientBoostedTrees(boostingStrategy).runWithValidation(trainingData, testData)
     // Evaluate model on test instances and compute test error
     val labelAndPreds = testData.map { point =>
       val prediction = model.predict(point.features)
       (point.label, prediction)
     }
-    val testErr = labelAndPreds.filter(r => r._1 != r._2).count.toDouble / testData.count()
-    println("Test Error = " + testErr)
+
+   /* val testErr = labelAndPreds.filter(r => r._1 != r._2).count.toDouble / testData.count()
+    println("Test Error = " + testErr)*/
     val accuracy = 1.0 * labelAndPreds.filter(x => (x._1 == 1 && x._2 > 0.5) || (x._1 == 0 && x._2 < 0.5)).count() / testData.count()
     println("Accuracy : "+accuracy);
     println("Learned classification GBT model:\n" + model.toDebugString)
@@ -225,11 +226,19 @@ object App {
     val sameModel = GradientBoostedTreesModel.load(sc,
       "target/tmp/myGradientBoostingClassificationModel")
   }
-  def rCheck(x: String): Double  = {
-    if (x.equals("?") || x.toDouble < 0.0) {
-      0.0
-    } else {
-      x.toDouble
+
+  def rCheck(x: Array[(String,Int)]): (Double,List[Double]) = {
+    val y = x.filter(x => mappings.contains(x._2)).map(_._1)
+    var arr = scala.collection.mutable.ListBuffer[Double] ()
+    var label:Double = 0.0;
+    if(y(0).equalsIgnoreCase("X") || Integer.parseInt(y(0)) > 0){label = 1.0}
+    for(elem <- y.drop(1)){
+      if (elem.equals("?") || elem.toDouble < 0.0) {
+        arr += 0.0
+      } else {
+        arr += elem.toDouble
+      }
     }
+    return (label,arr.toList)
   }
 }
