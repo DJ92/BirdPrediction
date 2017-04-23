@@ -20,6 +20,7 @@ aws.bucket.name=cs6240dj
 aws.subnet.id=subnet-dcc11abb
 aws.input=input
 aws.output=output
+aws.code=code
 aws.log.dir=log
 aws.num.nodes=10
 aws.instance.type=m4.large
@@ -68,7 +69,7 @@ cloud: jar upload-app-aws delete-output-aws
 		--release-label ${aws.emr.release} \
 		--instance-groups '[{"InstanceCount":${aws.num.nodes},"InstanceGroupType":"CORE","InstanceType":"${aws.instance.type}"},{"InstanceCount":1,"InstanceGroupType":"MASTER","InstanceType":"${aws.instance.type}"}]' \
 	    --applications Name=Spark \
-	    --steps '[{"Name":"Spark Program", "Args":["--class", "${job.name}", "--master","yarn","--deploy-mode", "cluster", "s3://${aws.bucket.name}/${jar.name}", "s3://${aws.bucket.name}/${aws.input}","s3://${aws.bucket.name}/${aws.output}"],"Type":"Spark","Jar":"s3://${aws.bucket.name}/${jar.name}","ActionOnFailure":"TERMINATE_CLUSTER"}]' \
+	    --steps '[{"Name":"Spark Program", "Args":["--class", "${job.name}", "--master","yarn","--deploy-mode", "cluster", "s3://${aws.bucket.name}/${jar.name}", "s3://${aws.bucket.name}/${aws.input}","s3://${aws.bucket.name}/${aws.output}","s3://${aws.bucket.name}/${aws.code}"],"Type":"Spark","Jar":"s3://${aws.bucket.name}/${jar.name}","ActionOnFailure":"TERMINATE_CLUSTER"}]' \
 		--log-uri s3://${aws.bucket.name}/${aws.log.dir} \
 		--service-role EMR_DefaultRole \
 		--ec2-attributes InstanceProfile=EMR_EC2_DefaultRole,SubnetId=${aws.subnet.id} \
