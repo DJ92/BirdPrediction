@@ -1,4 +1,4 @@
-# Makefile for Spark Page Rank project.
+# Makefile for Bird Prediction project.
 
 # Customize these paths for your environment.
 # -----------------------------------------------------------
@@ -8,6 +8,7 @@ jar.path=target/${jar.name}
 job.name=${jobname}
 local.input=input
 local.output=output
+local.code=code
 local.log=log
 # Pseudo-Cluster Execution
 hdfs.user.name=DJ
@@ -39,7 +40,7 @@ clean-local-log:
 
 # Runs standalone
 alone: jar clean-local-output
-	${spark.root}/bin/spark-submit --class ${job.name} --master local[*] ${jar.path} ${local.input} ${local.output}
+	${spark.root}/bin/spark-submit --class ${job.name} --master local[*] ${jar.path} ${local.input} ${local.output} ${local.code}
 
 
 # Create S3 bucket.
@@ -107,4 +108,3 @@ distro:
 	cp README.txt build/deliv/WordCount
 	tar -czf WordCount.tar.gz -C build/deliv WordCount
 	cd build/deliv && zip -rq ../../WordCount.zip WordCount
-	
